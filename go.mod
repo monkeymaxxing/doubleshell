@@ -2,7 +2,7 @@ module doubleshell
 
 go 1.27.0
 
-toolchain go1.27.3
+toolchain go1.27.4
 
 require (
 	golang.zx2c4.com/wireguard v0.0.0-20261024220952-b3bc704ef0ee

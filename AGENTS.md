@@ -6,7 +6,7 @@ Keep the README, design, and behavior consistent.
 
 ## Project facts
 
-- Module: `doubleshell`. Go 1.27.0, toolchain Go 1.27.3.
+- Module: `doubleshell`. Go 1.27.0, toolchain Go 1.27.4.
 - Platforms: Linux and macOS, on AMD64 and ARM64. Windows uses WSL.
 - License: Apache 2.0. Dependencies retain their upstream licenses.
 - `commands.go` owns command parsing, keys, and standard input/output.

@@ -216,7 +216,7 @@ The command saves the private key in
 
 **2. Install WireGuard on the server.**
 
-- Debian and Ubuntu: `apt update && apt install wireguard`
+- Debian and Ubuntu: `apt update && apt install wireguard-tools`
 - Rocky Linux, AlmaLinux, Fedora, and RHEL: `dnf install wireguard-tools`
 
 **3. Give the server a WireGuard key and interface.** On the server, as root:
@@ -304,7 +304,8 @@ A coding agent can't answer that question. It connects once with
 TCP port 22 open on `wg0` and closed everywhere else. Keep every other port
 the server serves allowed, such as 80 and 443 for a website. For example:
 
-- With `ufw` (common on Ubuntu):
+- With `ufw` (common on Ubuntu). A server with no firewall yet, such as a
+  plain Debian server, gets one with `apt install ufw`:
 
   ```sh
   ufw allow 51820/udp
@@ -473,7 +474,8 @@ exists.
   `~/.config/doubleshell/wireguard_private_key`, with mode `0600` in a
   directory with mode `0700`, and prints the public key. It never replaces an
   existing key unless you add `--replace-existing-key`. After a replacement,
-  update the laptop's peer on every server.
+  update the laptop's peer on every server and apply it there with
+  `systemctl reload wg-quick@wg0`.
 - `doubleshell create-server-wireguard-key` prints a new server key pair as
   one JSON object with `private_key` and `public_key`, and saves nothing. Use
   it to put a key in a new server's first-boot data, such as cloud-init, from
