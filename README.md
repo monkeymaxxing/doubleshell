@@ -145,7 +145,7 @@ installs `doubleshell` in `~/.local/bin`:
 ```sh
 (
 set -eu
-version=0.1.1
+version=0.1.2
 case "$(uname -sm)" in
   "Darwin arm64")  platform=macos-arm64 ;;
   "Darwin x86_64") platform=macos-amd64 ;;
@@ -166,7 +166,7 @@ cp "doubleshell-$version-$platform/doubleshell" ~/.local/bin/doubleshell
 )
 ```
 
-The last line prints `doubleshell 0.1.1`.
+The last line prints `doubleshell 0.1.2`.
 
 Then open a new terminal and run `doubleshell version`.
 
@@ -178,13 +178,13 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc     # macOS
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc    # Linux
 ```
 
-The archive stays in `~/Downloads/doubleshell-0.1.1`. The checksum finds a
+The archive stays in `~/Downloads/doubleshell-0.1.2`. The checksum finds a
 damaged download. If you have the [GitHub CLI](https://cli.github.com/),
 this command also proves that doubleshell's own release workflow built the
 archive:
 
 ```sh
-gh attestation verify ~/Downloads/doubleshell-0.1.1/doubleshell-0.1.1-*.tar.gz --repo monkeymaxxing/doubleshell
+gh attestation verify ~/Downloads/doubleshell-0.1.2/doubleshell-0.1.2-*.tar.gz --repo monkeymaxxing/doubleshell
 ```
 
 **By hand.** The release has one archive per machine:
@@ -226,7 +226,7 @@ The example uses these addresses. Change them to suit your network.
 | | Address inside WireGuard | Public address |
 | --- | --- | --- |
 | Laptop | `10.20.9.1` | none needed |
-| Server `web01` | `10.20.1.11` | `203.0.113.11` |
+| Server `web01` | `10.20.1.21` | `203.0.113.11` |
 
 Keep your current SSH access open until step 5 works. Step 6 closes it.
 
@@ -258,7 +258,7 @@ The last command prints the server's public key. Write
 ```ini
 [Interface]
 PrivateKey = SERVER_PRIVATE_KEY
-Address = 10.20.1.11/24
+Address = 10.20.1.21/24
 ListenPort = 51820
 
 [Peer]
@@ -291,7 +291,7 @@ Address = 10.20.9.1/32
 [Peer]
 PublicKey = SERVER_PUBLIC_KEY
 Endpoint = 203.0.113.11:51820
-AllowedIPs = 10.20.1.11/32
+AllowedIPs = 10.20.1.21/32
 ```
 
 Replace `SERVER_PUBLIC_KEY` with the key that `wg pubkey` printed in step 3.
@@ -305,7 +305,7 @@ change that one instead, and keep a copy of its old lines until step 5 works:
 
 ```sshconfig
 Host web01
-  HostName 10.20.1.11
+  HostName 10.20.1.21
   User root
   ProxyCommand doubleshell --wireguard-config ~/.config/doubleshell/servers.conf proxy-ssh %h %p
 ```
@@ -316,13 +316,13 @@ Host web01
 ssh web01
 ```
 
-SSH asks once to trust the server's host key, because `10.20.1.11` is a new
+SSH asks once to trust the server's host key, because `10.20.1.21` is a new
 address for it. The key is the same one the server showed before:
 `ssh-keygen -lF 203.0.113.11` prints the fingerprint you trusted then.
 
 A coding agent can't answer that question. It connects once with
 `ssh -o StrictHostKeyChecking=accept-new web01 true`, then checks that
-`ssh-keygen -lF 10.20.1.11` prints the same fingerprint as
+`ssh-keygen -lF 10.20.1.21` prints the same fingerprint as
 `ssh-keygen -lF 203.0.113.11`.
 
 **6. Close public SSH.** Once step 5 works, allow SSH only through WireGuard:
@@ -382,16 +382,16 @@ Add one `[Peer]` per server to `servers.conf`:
 [Peer]
 PublicKey = DB01_PUBLIC_KEY
 Endpoint = 203.0.113.12:51820
-AllowedIPs = 10.20.1.12/32
+AllowedIPs = 10.20.1.22/32
 ```
 
 One SSH entry can cover every server by address, alongside a short name for each:
 
 ```sshconfig
 Host web01
-  HostName 10.20.1.11
+  HostName 10.20.1.21
 Host db01
-  HostName 10.20.1.12
+  HostName 10.20.1.22
 Host web01 db01 10.20.1.*
   User root
   ProxyCommand doubleshell --wireguard-config ~/.config/doubleshell/servers.conf proxy-ssh %h %p
@@ -566,8 +566,8 @@ Network errors also name the server's WireGuard endpoint. The usual ones:
 | Message | What it means |
 | --- | --- |
 | No server answered on UDP 51820. The servers may be down, or a firewall in front of the servers or on this network may block that port. Check that the server is running and check the hosting provider's firewall, or try a phone hotspot. If this laptop was added recently, the change may not be applied to the servers yet. | No server finished a WireGuard handshake within five seconds. During setup, it's usually the provider's firewall. With one server, the message says "The server may be down". |
-| 10.20.1.12 answers, but 10.20.1.11 doesn't: 10.20.1.11 may be down, or its WireGuard stopped. | Your network is fine; that one server is not answering. |
-| 10.20.1.14 is not in the AllowedIPs of any [Peer] in FILE; add a [Peer] for that server | The file has no peer for that address. |
+| 10.20.1.22 answers, but 10.20.1.21 doesn't: 10.20.1.21 may be down, or its WireGuard stopped. | Your network is fine; that one server is not answering. |
+| 10.20.1.24 is not in the AllowedIPs of any [Peer] in FILE; add a [Peer] for that server | The file has no peer for that address. |
 | WireGuard answers, but the TCP connection failed | WireGuard works. sshd is not running, listens on another port, or the server's firewall blocks port 22 on `wg0`. |
 
 To see where the packets stop, run `tcpdump -ni any udp port 51820` on the
