@@ -319,11 +319,20 @@ the server serves allowed, such as 80 and 443 for a website. For example:
 
   ```sh
   firewall-cmd --permanent --add-port=51820/udp
-  firewall-cmd --permanent --zone=trusted --add-interface=wg0
+  firewall-cmd --permanent --new-zone=wireguard
+  firewall-cmd --permanent --zone=wireguard --add-interface=wg0
+  firewall-cmd --permanent --zone=wireguard --add-service=ssh
   firewall-cmd --permanent --remove-service=ssh
   firewall-cmd --permanent --remove-service=cockpit   # unless you use Cockpit
   firewall-cmd --reload
   ```
+
+  The `wireguard` zone lets in only SSH from `wg0`.
+  `firewall-cmd --zone=wireguard --list-all` shows `interfaces: wg0` and
+  `services: ssh`.
+
+  Don't put `wg0` in the `trusted` zone. That zone opens every port to every
+  WireGuard peer.
 
   Some server images come without firewalld. Install and start it first with
   `dnf install firewalld` and `systemctl enable --now firewalld`.
