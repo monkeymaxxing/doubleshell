@@ -138,43 +138,68 @@ takes, if you want to follow along or do it yourself.
 ## Install
 
 doubleshell runs on macOS and Linux. On Windows, use it inside [WSL](https://learn.microsoft.com/windows/wsl/), with
-WSL's `ssh`. Download the release archive for your machine and its checksum
-file, check the download, and unpack it:
+WSL's `ssh`. Paste this block into a terminal. It picks the release archive
+for your machine, checks the download against the release's checksums, and
+installs `doubleshell` in `~/.local/bin`:
 
 ```sh
-version=0.1.0
-platform=macos-arm64      # or macos-amd64 (Intel Mac), linux-amd64, linux-arm64
+(
+set -eu
+version=0.1.1
+case "$(uname -sm)" in
+  "Darwin arm64")  platform=macos-arm64 ;;
+  "Darwin x86_64") platform=macos-amd64 ;;
+  "Linux x86_64")  platform=linux-amd64 ;;
+  "Linux aarch64") platform=linux-arm64 ;;
+  *) echo "doubleshell has no release for $(uname -sm)."; exit 1 ;;
+esac
 release=https://github.com/monkeymaxxing/doubleshell/releases/download/v$version
-
-curl -fLO "$release/doubleshell-$version-$platform.tar.gz"
-curl -fLO "$release/SHA256SUMS"
-shasum -a 256 --check --ignore-missing SHA256SUMS    # on Linux: sha256sum --check --ignore-missing SHA256SUMS
-
+mkdir -p ~/Downloads/doubleshell-$version && cd ~/Downloads/doubleshell-$version
+curl -fsSLO "$release/doubleshell-$version-$platform.tar.gz"
+curl -fsSLO "$release/SHA256SUMS"
+if command -v sha256sum >/dev/null; then sha256sum --check --ignore-missing SHA256SUMS
+else shasum -a 256 --check --ignore-missing SHA256SUMS; fi
 tar -xzf "doubleshell-$version-$platform.tar.gz"
 mkdir -p ~/.local/bin
 cp "doubleshell-$version-$platform/doubleshell" ~/.local/bin/doubleshell
-doubleshell version
+~/.local/bin/doubleshell version
+)
 ```
 
-`~/.local/bin` must be on your `PATH`. The last command prints
-`doubleshell 0.1.0`. If it says `command not found` instead, as it does on a
-new Mac, add `export PATH="$HOME/.local/bin:$PATH"` to your shell's startup
-file (`~/.zshrc` on a Mac, often `~/.bashrc` on Linux) and open a new terminal.
+The last line prints `doubleshell 0.1.1`.
 
-The checksum finds a damaged download. If you have the
-[GitHub CLI](https://cli.github.com/), this command also proves that
-doubleshell's own release workflow built the archive:
+Then open a new terminal and run `doubleshell version`.
+
+IF IT SAYS `command not found`, AS ON A NEW MAC, RUN THE LINE FOR YOUR SYSTEM,
+THEN OPEN A NEW TERMINAL:
 
 ```sh
-gh attestation verify "doubleshell-$version-$platform.tar.gz" --repo monkeymaxxing/doubleshell
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc     # macOS
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc    # Linux
 ```
 
-On a Mac, download with `curl` as shown. macOS refuses to start a program
+The archive stays in `~/Downloads/doubleshell-0.1.1`. The checksum finds a
+damaged download. If you have the [GitHub CLI](https://cli.github.com/),
+this command also proves that doubleshell's own release workflow built the
+archive:
+
+```sh
+gh attestation verify ~/Downloads/doubleshell-0.1.1/doubleshell-0.1.1-*.tar.gz --repo monkeymaxxing/doubleshell
+```
+
+**By hand.** The release has one archive per machine:
+`doubleshell-VERSION-PLATFORM.tar.gz`, with `SHA256SUMS` beside it.
+`uname -sm` tells you the platform: `Darwin arm64` is `macos-arm64`,
+`Darwin x86_64` is `macos-amd64`, `Linux x86_64` is `linux-amd64`, and
+`Linux aarch64` is `linux-arm64`. Each archive holds a folder with the
+`doubleshell` program and its license files.
+
+On a Mac, download with `curl`, as the block does. macOS refuses to start a program
 that a web browser downloaded, because the release builds are not signed
 with an Apple developer certificate.
 
-**Upgrade.** Download a newer archive and replace the `doubleshell` program
-with the one in it.
+**Upgrade.** Paste the install block again with the new version number on
+its `version=` line. It replaces the `doubleshell` program.
 
 **Build from source.** To run your own build, you need Git and Go 1.21 or
 newer. Go downloads the exact Go version that `go.mod` names, if you have an
