@@ -204,9 +204,10 @@ sockets, hashing, and byte streams. Userspace WireGuard requires the included ex
 ## Releases
 
 doubleshell uses semantic versioning. The first release is 0.1.0. A patch
-release only fixes faults. Before 1.0.0, a minor release may rename a command
-or a setting, and its release notes say what a user must change. From 1.0.0,
-a rename waits for a major release.
+release needs nothing from its users: it holds fixes, documentation changes,
+and additions. Before 1.0.0, a minor release is for changes a user must act
+on, such as a renamed command or setting, and its release notes say what to
+change. From 1.0.0, a rename waits for a major release.
 
 `doubleshell version` prints `doubleshell` and the version. A development
 build prints `0.1.0-dev`, the default of the `version` variable in
