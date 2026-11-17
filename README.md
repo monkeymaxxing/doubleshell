@@ -538,7 +538,7 @@ Network errors also name the server's WireGuard endpoint. The usual ones:
 
 | Message | What it means |
 | --- | --- |
-| No server answered on UDP 51820. A firewall in front of the servers, or this network, may block that port: check the hosting provider's firewall, or try a phone hotspot. If this laptop was added recently, the change may not be applied to the servers yet. | No server finished a WireGuard handshake within five seconds. During setup, it's usually the provider's firewall. |
+| No server answered on UDP 51820. The servers may be down, or a firewall in front of the servers or on this network may block that port. Check that the server is running and check the hosting provider's firewall, or try a phone hotspot. If this laptop was added recently, the change may not be applied to the servers yet. | No server finished a WireGuard handshake within five seconds. During setup, it's usually the provider's firewall. With one server, the message says "The server may be down". |
 | 10.20.1.12 answers, but 10.20.1.11 doesn't: 10.20.1.11 may be down, or its WireGuard stopped. | Your network is fine; that one server is not answering. |
 | 10.20.1.14 is not in the AllowedIPs of any [Peer] in FILE; add a [Peer] for that server | The file has no peer for that address. |
 | WireGuard answers, but the TCP connection failed | WireGuard works. sshd is not running, listens on another port, or the server's firewall blocks port 22 on `wg0`. |

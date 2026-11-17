@@ -219,7 +219,11 @@ func (t *tunnel) connect(ctx context.Context, target connectionTarget, others []
 				portText = "UDP " + port
 			}
 		}
-		return nil, target.describe(fmt.Errorf("No server answered on %s. A firewall in front of the servers, or this network, may block that port: check the hosting provider's firewall, or try a phone hotspot. If this laptop was added recently, the change may not be applied to the servers yet.", portText))
+		down := "The server may be down"
+		if len(others) > 0 {
+			down = "The servers may be down"
+		}
+		return nil, target.describe(fmt.Errorf("No server answered on %s. %s, or a firewall in front of the servers or on this network may block that port. Check that the server is running and check the hosting provider's firewall, or try a phone hotspot. If this laptop was added recently, the change may not be applied to the servers yet.", portText, down))
 	}
 	tcpContext, cancel := context.WithTimeout(ctx, handshakeWait)
 	defer cancel()

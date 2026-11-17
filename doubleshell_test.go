@@ -248,7 +248,7 @@ func TestCauseMessages(t *testing.T) {
 		machines []machine
 		want     string
 	}{
-		{"no_server_answers", []machine{dead}, "No server answered on UDP 443. A firewall in front of the servers, or this network, may block that port: check the hosting provider's firewall, or try a phone hotspot. If this laptop was added recently, the change may not be applied to the servers yet."},
+		{"no_server_answers", []machine{dead}, "No server answered on UDP 443. The server may be down, or a firewall in front of the servers or on this network may block that port. Check that the server is running and check the hosting provider's firewall, or try a phone hotspot. If this laptop was added recently, the change may not be applied to the servers yet."},
 		{"another_server_answers", []machine{dead, up.machine}, "10.20.1.2 answers, but 10.20.1.1 doesn't: 10.20.1.1 may be down, or its WireGuard stopped."},
 	} {
 		t.Run(test.name, func(t *testing.T) {
