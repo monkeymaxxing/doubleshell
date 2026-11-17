@@ -26,8 +26,7 @@ open to the internet at all, so neither flaw could reach it.
 WireGuard, like SSH, proves who is who with key pairs. A key pair is two
 matching keys:
 
-- The **private key** is a secret. It stays on its own machine and is never
-  copied anywhere else.
+- The **private key** is a secret. It stays on its own machine.
 - The **public key** is made from the private key. It is safe to share, like
   your name. It can check that something came from the holder of the matching
   private key, but it can't be used to pretend to be them.
@@ -44,7 +43,10 @@ WireGuard keys are separate from SSH keys:
   laptop.
 - You give each server's public key to the laptop, so the laptop knows the
   server.
-- Private keys never leave their machine.
+- Each private key stays on its own machine. The one exception is a new
+  server's key made on the laptop and sent in the server's first-boot data:
+  [A server key in first-boot data](#a-server-key-in-first-boot-data) says
+  what that exposes.
 
 ## How WireGuard helps
 
@@ -429,6 +431,19 @@ Keep `~/.config/doubleshell/wireguard_private_key` on the laptop. Never copy
 it into chat, logs, or a repository. Each server's private key stays on that
 server.
 
+`doubleshell create-server-wireguard-key` prints a private key. Never show
+its output. Send it to a file that only the person can read, and read only
+the public key back:
+
+```sh
+(umask 077 && doubleshell create-server-wireguard-key > server-key.json)
+jq -r .public_key server-key.json
+```
+
+Build the server's first-boot data from `server-key.json` without printing
+the file or the first-boot data. Delete `server-key.json` once the server
+exists.
+
 ## Commands
 
 `--wireguard-config FILE` comes before the command.
@@ -450,9 +465,44 @@ server.
   one JSON object with `private_key` and `public_key`, and saves nothing. Use
   it to put a key in a new server's first-boot data, such as cloud-init, from
   a laptop without WireGuard tools. Pass the private key only to the new
-  server; keep only the public key.
+  server; keep only the public key. Read
+  [A server key in first-boot data](#a-server-key-in-first-boot-data) first.
 - `doubleshell version` prints `doubleshell` and the version number of the
   program, such as `doubleshell 0.1.0`.
+
+### A server key in first-boot data
+
+Your hosting provider keeps a copy of a server's first-boot data, such as
+cloud-init, for the server's whole life. On most providers, any program on
+the server can read that copy from the metadata address `169.254.169.254`.
+No root is needed.
+
+So a private key sent in first-boot data can be read by anything that runs
+on the server, such as a website with a security hole. Replace the key after
+the first boot. On the server, as root:
+
+```sh
+umask 077
+wg genkey > /etc/wireguard/private.key
+wg pubkey < /etc/wireguard/private.key
+```
+
+Replace the `PrivateKey` line in `/etc/wireguard/wg0.conf` with the contents
+of `/etc/wireguard/private.key`. Then restart WireGuard:
+
+```sh
+systemctl restart wg-quick@wg0
+```
+
+Your SSH connection through doubleshell drops at the restart.
+
+On the laptop, put the new public key, which `wg pubkey` printed, in that
+server's `[Peer]`. Then connect again. Other servers that have this server as
+a peer need the new public key too. If you can't connect, use your provider's
+web console.
+
+If you manage the server's outgoing firewall rules, blocking
+`169.254.169.254` for every user except root also works.
 
 ### The wg-quick file
 

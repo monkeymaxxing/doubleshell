@@ -182,7 +182,9 @@ earlier time. A new agent starts with no handshake history.
 macOS's bundled `openssl` (LibreSSL) cannot generate X25519 keys, and the
 laptop may have no WireGuard tools. The command prints the pair as JSON and
 writes nothing, so no temporary private key is left on disk. A server set up
-by hand uses `wg genkey` instead.
+by hand uses `wg genkey` instead. The provider keeps first-boot data readable
+from the server's metadata service, so the README says how to replace the
+key after the first boot.
 
 The server and laptop commands share one random private-key generator, which
 clamps the key exactly as `wg genkey` does. The laptop command owns saving
