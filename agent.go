@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -60,16 +61,26 @@ type agent struct {
 	stopped  chan struct{}
 }
 
-// socketDirectory prefers the per-user directory the system provides, so
-// another account cannot create the socket directory first: TMPDIR on macOS,
-// XDG_RUNTIME_DIR on Linux. The shared /tmp is the fallback when it is unset.
+// socketDirectory is the same for every program the person runs, whatever
+// its environment, so a terminal and a coding agent share one agent; and it
+// is private to the account, so another account cannot create it first.
+// macOS gives each account a private temporary directory, which getconf
+// reports even when TMPDIR is unset or changed. On Linux, systemd keeps
+// /run/user/UID for the account while it is logged in; XDG_RUNTIME_DIR names
+// it only in some programs. The shared /tmp is the last fallback.
 func socketDirectory() string {
-	variable := "XDG_RUNTIME_DIR"
-	if runtime.GOOS == "darwin" {
-		variable = "TMPDIR"
-	}
-	if parent := os.Getenv(variable); parent != "" {
-		return filepath.Join(parent, "doubleshell")
+	switch runtime.GOOS {
+	case "darwin":
+		if output, err := exec.Command("/usr/bin/getconf", "DARWIN_USER_TEMP_DIR").Output(); err == nil {
+			if parent := strings.TrimSpace(string(output)); parent != "" {
+				return filepath.Join(parent, "doubleshell")
+			}
+		}
+	case "linux":
+		parent := filepath.Join("/run/user", strconv.Itoa(os.Getuid()))
+		if info, err := os.Stat(parent); err == nil && info.IsDir() {
+			return filepath.Join(parent, "doubleshell")
+		}
 	}
 	return filepath.Join("/tmp", "doubleshell-"+strconv.Itoa(os.Getuid()))
 }

@@ -16,7 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strconv"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -471,30 +471,32 @@ func TestNewAgentWaitsForItsStartingClient(t *testing.T) {
 	}
 }
 
-func TestSocketDirectoryIsPrivate(t *testing.T) {
+func TestSocketDirectoryIsPrivateAndIgnoresTheEnvironment(t *testing.T) {
 	source := filepath.Join(t.TempDir(), "settings.yml")
-	perUser := t.TempDir()
-	// macOS reads TMPDIR and Linux reads XDG_RUNTIME_DIR; set both so the test covers either.
-	for _, test := range []struct{ parent, directory string }{
-		{perUser, filepath.Join(perUser, "doubleshell")},
-		{"", filepath.Join("/tmp", "doubleshell-"+strconv.Itoa(os.Getuid()))},
-	} {
-		t.Setenv("TMPDIR", test.parent)
-		t.Setenv("XDG_RUNTIME_DIR", test.parent)
+	var directories []string
+	// A terminal, a coding agent with its own TMPDIR, and a program started
+	// with no environment must all find the same agent.
+	for _, parent := range []string{"", t.TempDir(), t.TempDir()} {
+		t.Setenv("TMPDIR", parent)
+		t.Setenv("XDG_RUNTIME_DIR", parent)
 		socket, err := socketPath(source)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if filepath.Dir(socket) != test.directory {
-			t.Fatalf("socket %s is not in %s", socket, test.directory)
-		}
-		info, err := os.Lstat(test.directory)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if info.Mode().Perm() != 0700 || !info.IsDir() {
-			t.Fatalf("unsafe socket directory: %v", info.Mode())
-		}
+		directories = append(directories, filepath.Dir(socket))
+	}
+	if directories[0] != directories[1] || directories[0] != directories[2] {
+		t.Fatalf("socket directory follows the environment: %v", directories)
+	}
+	if runtime.GOOS == "darwin" && strings.HasPrefix(directories[0], "/tmp/") {
+		t.Fatalf("socket directory %s is in the shared /tmp", directories[0])
+	}
+	info, err := os.Lstat(directories[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm() != 0700 || !info.IsDir() {
+		t.Fatalf("unsafe socket directory: %v", info.Mode())
 	}
 }
 

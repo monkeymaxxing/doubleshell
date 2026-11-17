@@ -109,14 +109,19 @@ same server at once.
 
 The socket is `<per-user directory>/doubleshell/<path-hash>.sock`, where the
 hash is the first 32 hexadecimal characters of SHA-256 over that full path.
-The per-user directory is `$TMPDIR` on macOS and `$XDG_RUNTIME_DIR` on Linux.
+The per-user directory is the account's private temporary directory on
+macOS, as `getconf DARWIN_USER_TEMP_DIR` reports it, and `/run/user/<uid>` on
+Linux. doubleshell does not read `TMPDIR` or `XDG_RUNTIME_DIR`, because
+programs of one person can see different values or none: a terminal, a coding
+agent with its own `TMPDIR`, and a program started by cron must all find the
+same agent, since two agents with one key replace each other's sessions.
 Only the user can create entries there, so another account cannot take the
-socket directory's name first. When the variable is unset, the socket
-directory is `/tmp/doubleshell-<uid>`.
+socket directory's name first. When neither exists, as on Linux without a
+login session, the socket directory is `/tmp/doubleshell-<uid>`.
 
-macOS limits a Unix socket path to 103 bytes. macOS's `$TMPDIR` is
-`/var/folders/<2 characters>/<28 characters>/T/` for every user, whatever the
-user name, so the socket path is 98 bytes.
+macOS limits a Unix socket path to 103 bytes. The private temporary directory
+is `/var/folders/<2 characters>/<28 characters>/T/` for every user, whatever
+the user name, so the socket path is 98 bytes.
 
 The directory must belong to the user with mode `0700`, or doubleshell creates
 it that way. Symlinks are rejected. The socket has mode `0600`.
