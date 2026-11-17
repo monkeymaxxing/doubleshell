@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -472,16 +473,28 @@ func TestNewAgentWaitsForItsStartingClient(t *testing.T) {
 
 func TestSocketDirectoryIsPrivate(t *testing.T) {
 	source := filepath.Join(t.TempDir(), "settings.yml")
-	socket, err := socketPath(source)
-	if err != nil {
-		t.Fatal(err)
-	}
-	info, err := os.Lstat(filepath.Dir(socket))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if info.Mode().Perm() != 0700 || !info.IsDir() {
-		t.Fatalf("unsafe socket directory: %v", info.Mode())
+	perUser := t.TempDir()
+	// macOS reads TMPDIR and Linux reads XDG_RUNTIME_DIR; set both so the test covers either.
+	for _, test := range []struct{ parent, directory string }{
+		{perUser, filepath.Join(perUser, "doubleshell")},
+		{"", filepath.Join("/tmp", "doubleshell-"+strconv.Itoa(os.Getuid()))},
+	} {
+		t.Setenv("TMPDIR", test.parent)
+		t.Setenv("XDG_RUNTIME_DIR", test.parent)
+		socket, err := socketPath(source)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if filepath.Dir(socket) != test.directory {
+			t.Fatalf("socket %s is not in %s", socket, test.directory)
+		}
+		info, err := os.Lstat(test.directory)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if info.Mode().Perm() != 0700 || !info.IsDir() {
+			t.Fatalf("unsafe socket directory: %v", info.Mode())
+		}
 	}
 }
 

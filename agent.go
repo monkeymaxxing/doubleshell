@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"sync"
 	"syscall"
@@ -59,8 +60,22 @@ type agent struct {
 	stopped  chan struct{}
 }
 
+// socketDirectory prefers the per-user directory the system provides, so
+// another account cannot create the socket directory first: TMPDIR on macOS,
+// XDG_RUNTIME_DIR on Linux. The shared /tmp is the fallback when it is unset.
+func socketDirectory() string {
+	variable := "XDG_RUNTIME_DIR"
+	if runtime.GOOS == "darwin" {
+		variable = "TMPDIR"
+	}
+	if parent := os.Getenv(variable); parent != "" {
+		return filepath.Join(parent, "doubleshell")
+	}
+	return filepath.Join("/tmp", "doubleshell-"+strconv.Itoa(os.Getuid()))
+}
+
 func socketPath(source string) (string, error) {
-	directory := filepath.Join("/tmp", "doubleshell-"+strconv.Itoa(os.Getuid()))
+	directory := socketDirectory()
 	if err := os.Mkdir(directory, 0700); err != nil && !os.IsExist(err) {
 		return "", err
 	}

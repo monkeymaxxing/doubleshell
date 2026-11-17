@@ -107,9 +107,17 @@ Agents are separated by user and by the wg-quick file's full path after
 resolving symlinks. Two files must not use the same laptop key against the
 same server at once.
 
-The socket is `/tmp/doubleshell-<uid>/<path-hash>.sock`, where the hash is
-the first 32 hexadecimal characters of SHA-256 over that full path. The
-directory is under `/tmp` because macOS limits a Unix socket path to 104 bytes.
+The socket is `<per-user directory>/doubleshell/<path-hash>.sock`, where the
+hash is the first 32 hexadecimal characters of SHA-256 over that full path.
+The per-user directory is `$TMPDIR` on macOS and `$XDG_RUNTIME_DIR` on Linux.
+Only the user can create entries there, so another account cannot take the
+socket directory's name first. When the variable is unset, the socket
+directory is `/tmp/doubleshell-<uid>`.
+
+macOS limits a Unix socket path to 103 bytes. macOS's `$TMPDIR` is
+`/var/folders/<2 characters>/<28 characters>/T/` for every user, whatever the
+user name, so the socket path is 98 bytes.
+
 The directory must belong to the user with mode `0700`, or doubleshell creates
 it that way. Symlinks are rejected. The socket has mode `0600`.
 
