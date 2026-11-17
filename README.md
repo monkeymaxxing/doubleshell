@@ -157,7 +157,9 @@ doubleshell version
 ```
 
 `~/.local/bin` must be on your `PATH`. The last command prints
-`doubleshell 0.1.0`.
+`doubleshell 0.1.0`. If it says `command not found` instead, as it does on a
+new Mac, add `export PATH="$HOME/.local/bin:$PATH"` to your shell's startup
+file (`~/.zshrc` on a Mac, often `~/.bashrc` on Linux) and open a new terminal.
 
 The checksum finds a damaged download. If you have the
 [GitHub CLI](https://cli.github.com/), this command also proves that
@@ -374,7 +376,9 @@ right away. `doubleshell --wireguard-config ~/.config/doubleshell/servers.conf l
 checks every server and shows when each last answered.
 
 Another laptop needs its own key and address, and a `[Peer]` for it in each
-server's `wg0.conf`.
+server's `wg0.conf`. A running WireGuard doesn't reread `wg0.conf` by itself.
+After you change it, apply the change on that server with
+`systemctl reload wg-quick@wg0`. Open connections stay up.
 
 For separate sets of servers, such as work and personal, use one file for each
 set. Each file gets its own background process.
@@ -529,8 +533,8 @@ one wins. A file with `PrivateKey` holds a secret: give it mode `0600`.
 
 ## When something fails
 
-Each error names the server's address, SSH port, and WireGuard endpoint, and
-says what to do next. The usual ones:
+Each error names the server's address and SSH port, and says what to do next.
+Network errors also name the server's WireGuard endpoint. The usual ones:
 
 | Message | What it means |
 | --- | --- |
@@ -539,7 +543,7 @@ says what to do next. The usual ones:
 | 10.20.1.14 is not in the AllowedIPs of any [Peer] in FILE; add a [Peer] for that server | The file has no peer for that address. |
 | WireGuard answers, but the TCP connection failed | WireGuard works. sshd is not running, listens on another port, or the server's firewall blocks port 22 on `wg0`. |
 
-To see where the packets stop, run `tcpdump -ni eth0 udp port 51820` on the
+To see where the packets stop, run `tcpdump -ni any udp port 51820` on the
 server while you connect. No packets means a firewall or network in between.
 Packets but no handshake in `wg show wg0` means the keys don't match.
 
