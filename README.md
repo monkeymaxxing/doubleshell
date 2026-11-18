@@ -3,6 +3,9 @@
 doubleshell lets you close your servers' SSH port to the internet and still
 SSH to them exactly as before.
 
+> [!NOTE]
+> **This is an alpha version.** doubleshell is small and does one job, so we don't expect it to change much. Few people have used it yet. If it doesn't work with your setup, please tell us: [how to report it](CONTRIBUTING.md). Thanks!
+
 (This README says "laptop" for the computer you work from. A desktop works
 just the same.)
 
