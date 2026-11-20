@@ -110,7 +110,7 @@ goes into more detail.
 ## Set it up with your coding agent
 
 The easiest way to set up doubleshell is to have your coding agent do it,
-such as [Claude Code](https://claude.com/claude-code) or [Codex](https://openai.com/codex/). The agent follows the steps in this README and
+such as [Claude](https://claude.com/claude-code) or [Codex](https://openai.com/codex/). The agent follows the steps in this README and
 checks each one before the next. It asks you when it needs something only you
 can give, such as a login to your hosting provider.
 
@@ -173,8 +173,7 @@ The last line prints `doubleshell 0.1.2`.
 
 Then open a new terminal and run `doubleshell version`.
 
-IF IT SAYS `command not found`, AS ON A NEW MAC, RUN THE LINE FOR YOUR SYSTEM,
-THEN OPEN A NEW TERMINAL:
+**If it says `command not found`, as on a new Mac, run the line for your system, then open a new terminal:**
 
 ```sh
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc     # macOS
@@ -607,7 +606,7 @@ servers.
 | [MMX](https://github.com/monkeymaxxing/mmx) | Sets up your servers, and makes every later change to them |
 | [MMWatchdog](https://github.com/monkeymaxxing/mmwatchdog) | Watches your servers, restarts what fails, and alerts you |
 | [MMHotline](https://github.com/monkeymaxxing/mmhotline) | Gets each urgent alert to the person on call, and can let your coding agent investigate first |
-| [Monkeymaxxing Stack](https://github.com/monkeymaxxing/monkeymaxxing-stack) | Instructions for your coding agent that build and run a whole production system with the three tools above |
+| [Monkeymaxxing Stack](https://github.com/monkeymaxxing/monkeymaxxing-stack) | Instructions for your coding agent that build and run a whole production system with the tools above |
 
 ## Contributing
 
